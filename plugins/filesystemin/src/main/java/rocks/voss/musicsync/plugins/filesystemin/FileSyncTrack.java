@@ -171,6 +171,6 @@ public class FileSyncTrack implements SyncTrack {
 
     @Override
     public boolean isFresh() {
-        return true;
+        return false;
     }
 }
