@@ -247,14 +247,14 @@ public class TonieboxPlugin implements SyncOutputPlugin {
             if (StringUtils.equals(chapter.getTitle(), getTrackTitle(syncTrack))) {
                 log.debug("Chapter found: " + chapter.getTitle());
                 if (!isValidTrack(syncTrack, chapter)) {
-                    log.debug("discrepancy between source & target is too high: " + syncTrack.getId());
+                    log.info("discrepancy between source & target is too high: " + syncTrack.getId());
                     return true;
                 }
                 if (syncTrack.isFresh()) {
-                    log.debug("Track was updated and needs reupload: " + syncTrack.getId());
+                    log.info("Track was updated and needs reupload: " + syncTrack.getId());
                     return true;
                 }
-                log.debug("Chapter is not to be removed: " + syncTrack.getId());
+                log.info("Chapter is not to be removed: " + syncTrack.getId());
                 return false;
             }
         }
@@ -275,12 +275,12 @@ public class TonieboxPlugin implements SyncOutputPlugin {
         int chapterDuration = Math.round(chapter.getSeconds()) * 1000;
         int diff = chapterDuration - syncTrack.getTrackDuration();
 
-        log.debug("SyncTrack length: " + syncTrack.getTrackDuration());
-        log.debug("Chapter length: " + chapter.getSeconds() * 1000);
-        log.debug("Calc'd Diff: " + diff);
+        log.info(syncTrack + " length: " + syncTrack.getTrackDuration());
+        log.info(syncTrack + " chapter length: " + chapter.getSeconds() * 1000);
+        log.info(syncTrack + " calculated diff: " + diff);
 
         if (diff > pluginConfiguration.getThreshold() || diff < -pluginConfiguration.getThreshold()) {
-            log.debug("not valid");
+            log.info(syncTrack + " is not valid");
             return false;
         }
         log.debug("valid");
