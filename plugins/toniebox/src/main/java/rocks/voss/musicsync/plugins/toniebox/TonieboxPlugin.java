@@ -94,25 +94,38 @@ public class TonieboxPlugin implements SyncOutputPlugin {
         }
 
         try {
-            List<Chapter> sortedChapters = new ArrayList<>(creativeTonie.getChapters().length);
-            log.debug("Sorting known tracks");
-            for (SyncTrack syncTrack : syncTracks) {
-                Chapter chapter = findChapter(creativeTonie.getChapters(), syncTrack);
-                if (chapter != null) {
-                    sortedChapters.add(chapter);
-                }
-            }
-            log.info("Sort unknown tracks after known tracks");
-            for (Chapter chapter : creativeTonie.getChapters()) {
-                if (!Pattern.matches("\\w{22}\\s-\\s.+\\s-\\s.+", chapter.getTitle())) {
-                    sortedChapters.add(chapter);
-                }
-            }
+            List<Chapter> chapters = new ArrayList<>(creativeTonie.getChapters().length);
 
-            creativeTonie.setChapters(sortedChapters.toArray(new Chapter[]{}));
+            if (pluginConfiguration.getSortMode() >= 0) {
+                addKnown(syncTracks, creativeTonie, chapters);
+                addUnknown(creativeTonie, chapters);
+            } else if (pluginConfiguration.getSortMode() < 0) {
+                addUnknown(creativeTonie, chapters);
+                addKnown(syncTracks, creativeTonie, chapters);
+            }
+            creativeTonie.setChapters(chapters.toArray(new Chapter[]{}));
             creativeTonie.commit();
         } catch (Exception e) {
             log.error("Exception", e);
+        }
+    }
+
+    private void addKnown(List<SyncTrack> syncTracks, CreativeTonie creativeTonie, List<Chapter> chapters) {
+        log.debug("Adding known tracks");
+        for (SyncTrack syncTrack : syncTracks) {
+            Chapter chapter = findChapter(creativeTonie.getChapters(), syncTrack);
+            if (chapter != null) {
+                chapters.add(chapter);
+            }
+        }
+    }
+
+    private void addUnknown(CreativeTonie creativeTonie, List<Chapter> chapters) {
+        log.info("Adding unknown tracks");
+        for (Chapter chapter : creativeTonie.getChapters()) {
+            if (!Pattern.matches("\\w{22}\\s-\\s.+\\s-\\s.+", chapter.getTitle())) {
+                chapters.add(chapter);
+            }
         }
     }
 
