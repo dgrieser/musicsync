@@ -45,8 +45,6 @@ public class TonieboxPlugin implements SyncOutputPlugin {
     public void uploadTrack(SyncConnection connection, SyncTrack syncTrack) {
         try {
             CreativeTonie creativeTonie = getCreativeTonie(connection);
-            creativeTonie.refresh();
-
             if (creativeTonie == null) {
                 log.error("CreativeTonie not found");
                 return;
@@ -57,6 +55,7 @@ public class TonieboxPlugin implements SyncOutputPlugin {
                 return;
             }
             creativeTonie.refresh();
+            log.info("Uploading: " + syncTrack);
             creativeTonie.uploadFile(getTrackTitle(syncTrack), f.getAbsolutePath());
             creativeTonie.commit();
 
@@ -96,16 +95,16 @@ public class TonieboxPlugin implements SyncOutputPlugin {
 
         try {
             List<Chapter> sortedChapters = new ArrayList<>(creativeTonie.getChapters().length);
-            log.debug("Put unknown tracks to front");
-            for (Chapter chapter : creativeTonie.getChapters()) {
-                if (!Pattern.matches("\\w{22}\\s-\\s.+\\s-\\s.+", chapter.getTitle())) {
-                    sortedChapters.add(chapter);
-                }
-            }
             log.debug("Sorting known tracks");
             for (SyncTrack syncTrack : syncTracks) {
                 Chapter chapter = findChapter(creativeTonie.getChapters(), syncTrack);
                 if (chapter != null) {
+                    sortedChapters.add(chapter);
+                }
+            }
+            log.info("Sort unknown tracks after known tracks");
+            for (Chapter chapter : creativeTonie.getChapters()) {
+                if (!Pattern.matches("\\w{22}\\s-\\s.+\\s-\\s.+", chapter.getTitle())) {
                     sortedChapters.add(chapter);
                 }
             }
@@ -217,7 +216,14 @@ public class TonieboxPlugin implements SyncOutputPlugin {
     }
 
     private String getTrackTitle(SyncTrack syncTrack) {
-        return StringUtils.left(syncTrack.getId() + " - " + syncTrack.getArtists()[0] + " - " + syncTrack.getName(), 128);
+        StringBuilder title = new StringBuilder();
+        title.append(syncTrack.getId());
+        var artists = syncTrack.getArtists();
+        if (artists != null && artists.length > 0) {
+            title.append(" - ").append(artists[0]);
+        }
+        title.append(" - ").append(syncTrack.getName());
+        return StringUtils.left(title.toString(), 128);
     }
 
     private boolean isChapterToBeRemoved(List<SyncTrack> syncTracks, Chapter chapter) {
