@@ -57,6 +57,7 @@ public class TonieboxPlugin implements SyncOutputPlugin {
             creativeTonie.refresh();
             log.info("Uploading: " + syncTrack);
             creativeTonie.uploadFile(getTrackTitle(syncTrack), f.getAbsolutePath());
+            log.info("Committing tonie " + creativeTonie.getName());
             creativeTonie.commit();
 
         } catch (Exception e) {
@@ -103,7 +104,9 @@ public class TonieboxPlugin implements SyncOutputPlugin {
                 addUnknown(creativeTonie, chapters);
                 addKnown(syncTracks, creativeTonie, chapters);
             }
+            log.info("Chapters after ordering: " + chapters.toString());
             creativeTonie.setChapters(chapters.toArray(new Chapter[]{}));
+            log.info("Committing tonie " + creativeTonie.getName());
             creativeTonie.commit();
         } catch (Exception e) {
             log.error("Exception", e);
@@ -147,7 +150,9 @@ public class TonieboxPlugin implements SyncOutputPlugin {
                 }
             }
 
+            log.info("Chapters after clean up: " + newChapters.toString());
             creativeTonie.setChapters(newChapters.toArray(new Chapter[]{}));
+            log.info("Committing tonie " + creativeTonie.getName());
             creativeTonie.commit();
         } catch (Exception e) {
             log.error("Exception", e);
